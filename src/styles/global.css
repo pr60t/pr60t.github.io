@@ -1604,26 +1604,21 @@ h3[id] {
 /* Bespoke Card Entrance Choreography & Kinetic Hero Focus Reveal */
 @media (prefers-reduced-motion: no-preference) {
 
-  html[data-splash-done="false"] .hero-kinetic,
-  html[data-splash-done="false"] .hero-kinetic-sub {
+  /* Matrix-resolve hero elements: hidden until JS fires hero-matrix-ready */
+  .hero-matrix-el {
     opacity: 0;
-    filter: blur(10px);
-    transform: translateY(10px);
+    filter: blur(8px);
+    transform: translateY(8px);
+    transition:
+      opacity 420ms var(--ease-out),
+      filter 420ms var(--ease-out),
+      transform 420ms var(--ease-out);
   }
 
-  .hero-kinetic,
-  .hero-kinetic-sub {
+  .hero-matrix-el.hero-matrix-ready {
     opacity: 1;
     filter: blur(0px);
     transform: translateY(0);
-    transition:
-      opacity 480ms var(--ease-out),
-      filter 480ms var(--ease-out),
-      transform 480ms var(--ease-out);
-  }
-
-  .hero-kinetic-sub {
-    transition-delay: 60ms;
   }
 
   .reveal-card {

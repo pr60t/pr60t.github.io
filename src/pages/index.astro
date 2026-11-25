@@ -14,12 +14,12 @@ const latestPosts = getAllPosts().slice(0, 3);
 >
   <section class="hero-grid" aria-labelledby="hero-heading">
     <div class="hero-copy">
-      <span class="eyebrow" data-matrix-resolve>// TENANT A &middot; TENANT B &middot; TENANT C</span>
-      <h1 id="hero-heading" class="hero-kinetic">
-        {PROFILE.heroHeadlineTop}<br />
-        <em>{PROFILE.heroHeadlineAccent}</em>
+      <span class="eyebrow hero-matrix-el" data-matrix-resolve data-matrix-delay="0">// TENANT A &middot; TENANT B &middot; TENANT C</span>
+      <h1 id="hero-heading">
+        <span class="hero-matrix-el" data-matrix-resolve data-matrix-delay="80">{PROFILE.heroHeadlineTop}</span><br />
+        <em class="hero-matrix-el" data-matrix-resolve data-matrix-delay="160">{PROFILE.heroHeadlineAccent}</em>
       </h1>
-      <p class="hero-sub hero-kinetic-sub">{PROFILE.heroSub}</p>
+      <p class="hero-sub hero-matrix-el" data-matrix-resolve data-matrix-delay="260">{PROFILE.heroSub}</p>
       <p class="hero-meta">
         {PROFILE.location}. {PROFILE.availability}
       </p>
@@ -324,20 +324,78 @@ const latestPosts = getAllPosts().slice(0, 3);
 
     function initHomeAnimations() {
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const heroCopy = document.querySelector<HTMLElement>('.hero-copy');
 
-      const activateHero = () => {
-        if (heroCopy) heroCopy.dataset.revealed = 'true';
+      // --- Matrix-Blur / Glyph-Resolve core ---
+      const GLYPHS = '01ABCDEF_./: ';
+
+      const runMatrixResolve = (el: HTMLElement, delayMs = 0) => {
+        if (el.dataset.resolved === 'true') return;
+        el.dataset.resolved = 'true';
+        const finalText = el.textContent ?? '';
+        const duration = 560;
+        el.classList.add('matrix-resolving');
+
+        const kick = () => {
+          const start = performance.now();
+          const step = (now: number) => {
+            const t = Math.min(1, (now - start) / duration);
+            const lockedCount = Math.floor(t * finalText.length);
+            let out = '';
+            for (let i = 0; i < finalText.length; i += 1) {
+              const ch = finalText[i]!;
+              if (i < lockedCount || ch === ' ' || ch === '/' || ch === '·') {
+                out += ch;
+              } else {
+                out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+              }
+            }
+            el.textContent = out;
+            if (t < 1) {
+              requestAnimationFrame(step);
+            } else {
+              el.textContent = finalText;
+              el.classList.remove('matrix-resolving');
+            }
+          };
+          requestAnimationFrame(step);
+        };
+
+        if (delayMs > 0) {
+          window.setTimeout(kick, delayMs);
+        } else {
+          kick();
+        }
       };
 
-      if (reduced || document.documentElement.dataset.splashDone === 'true') {
-        activateHero();
+      // --- Hero elements: resolve on splash-done (or immediately if returning) ---
+      const heroEls = Array.from(
+        document.querySelectorAll<HTMLElement>('.hero-matrix-el[data-matrix-resolve]')
+      );
+
+      if (reduced) {
+        // Skip animation entirely — just make hero visible
+        heroEls.forEach((el) => {
+          el.dataset.resolved = 'true';
+          el.classList.add('hero-matrix-ready');
+        });
       } else {
-        window.addEventListener('lattice:splash-done', activateHero, { once: true });
-        window.setTimeout(activateHero, 1400);
+        const fireHeroResolve = () => {
+          heroEls.forEach((el) => {
+            const delay = parseInt(el.dataset.matrixDelay ?? '0', 10);
+            window.setTimeout(() => el.classList.add('hero-matrix-ready'), delay);
+            runMatrixResolve(el, delay);
+          });
+        };
+
+        if (document.documentElement.dataset.splashDone === 'true') {
+          fireHeroResolve();
+        } else {
+          window.addEventListener('lattice:splash-done', fireHeroResolve, { once: true });
+          window.setTimeout(fireHeroResolve, 1400);
+        }
       }
 
-      // Spatial card entrance choreography (once: true, 70ms stagger)
+      // --- Card entrance choreography (IntersectionObserver, 70ms stagger) ---
       const cards = Array.from(
         document.querySelectorAll<HTMLElement>('.card, .case-file-panel, .stat-tile, .skill-group')
       );
@@ -370,41 +428,10 @@ const latestPosts = getAllPosts().slice(0, 3);
       );
       cards.forEach((c) => cardObserver.observe(c));
 
-      // Restrained Matrix-Blur / Glyph-Resolve on high-signal labels (once)
-      const GLYPHS = '01ABCDEF_./:';
-      const resolveTargets = document.querySelectorAll<HTMLElement>('[data-matrix-resolve]');
-
-      const runMatrixResolve = (el: HTMLElement) => {
-        if (el.dataset.resolved === 'true') return;
-        el.dataset.resolved = 'true';
-        const finalText = el.textContent ?? '';
-        const duration = 560;
-        const start = performance.now();
-        el.classList.add('matrix-resolving');
-
-        const step = (now: number) => {
-          const t = Math.min(1, (now - start) / duration);
-          const lockedCount = Math.floor(t * finalText.length);
-          let out = '';
-          for (let i = 0; i < finalText.length; i += 1) {
-            const ch = finalText[i]!;
-            if (i < lockedCount || ch === ' ' || ch === '/' || ch === '·') {
-              out += ch;
-            } else {
-              out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-            }
-          }
-          el.textContent = out;
-          if (t < 1) {
-            requestAnimationFrame(step);
-          } else {
-            el.textContent = finalText;
-            el.classList.remove('matrix-resolving');
-          }
-        };
-
-        requestAnimationFrame(step);
-      };
+      // --- Non-hero [data-matrix-resolve] (section eyebrows) → IntersectionObserver ---
+      const sectionResolveTargets = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-matrix-resolve]')
+      ).filter((el) => !el.classList.contains('hero-matrix-el'));
 
       const textObserver = new IntersectionObserver(
         (entries) => {
@@ -417,8 +444,8 @@ const latestPosts = getAllPosts().slice(0, 3);
         },
         { threshold: 0.2 }
       );
-      resolveTargets.forEach((el) => textObserver.observe(el));
-    }
+      sectionResolveTargets.forEach((el) => textObserver.observe(el));
+        }
 
     initHomeAnimations();
     document.addEventListener('astro:page-load', initHomeAnimations);
