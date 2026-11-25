@@ -1,0 +1,39 @@
+---
+export type IconName =
+  | 'arrow-down'
+  | 'arrow-left'
+  | 'arrow-up'
+  | 'branch'
+  | 'check'
+  | 'close'
+  | 'copy'
+  | 'external'
+  | 'lattice'
+  | 'mail'
+  | 'menu'
+  | 'pause'
+  | 'play'
+  | 'profile'
+  | 'rss'
+  | 'search'
+  | 'tag'
+  | 'toc';
+
+interface Props {
+  name: IconName;
+  size?: number;
+  class?: string;
+}
+
+const { name, size = 24, class: className = '' } = Astro.props;
+---
+
+<svg
+  class={`icon ${className}`.trim()}
+  width={size}
+  height={size}
+  aria-hidden="true"
+  focusable="false"
+>
+  <use href={`#i-${name}`} />
+</svg>

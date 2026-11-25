@@ -1,0 +1,325 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import spaceGrotesk700Url from '@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff2?url';
+import jetBrainsMono500Url from '@fontsource/jetbrains-mono/files/jetbrains-mono-latin-500-normal.woff2?url';
+import '@fontsource/space-grotesk/400.css';
+import '@fontsource/space-grotesk/700.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '@fontsource/jetbrains-mono/700.css';
+import '@/styles/tokens.css';
+import '@/styles/global.css';
+import { PROFILE } from '@/data/profile';
+import IconsSprite from '@/components/IconsSprite.astro';
+import Icon from '@/components/Icon.astro';
+import LatticeShell from '@/components/LatticeShell.astro';
+import PwaManager from '@/components/PwaManager.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  canonicalPath?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  includeKatexCss?: boolean;
+  jsonLd?: Record<string, unknown>;
+}
+
+const {
+  title,
+  description,
+  canonicalPath = Astro.url.pathname,
+  ogImage,
+  ogType = 'website',
+  includeKatexCss = false,
+  jsonLd,
+} = Astro.props;
+
+const canonicalUrl = new URL(canonicalPath, Astro.site ?? 'https://pr60t.github.io').toString();
+const resolvedOgImage = ogImage
+  ? new URL(ogImage, Astro.site ?? 'https://pr60t.github.io').toString()
+  : new URL('/poster.svg', Astro.site ?? 'https://pr60t.github.io').toString();
+
+const currentPath = Astro.url.pathname;
+const isHome = currentPath === '/';
+const isBlog = currentPath.startsWith('/blog');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#0A2A2D" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href={spaceGrotesk700Url} />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href={jetBrainsMono500Url} />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none';"
+    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/pwa-192.png" />
+    <link rel="alternate" type="application/rss+xml" title={`${PROFILE.name} (${PROFILE.handle})`} href="/rss.xml" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={resolvedOgImage} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={resolvedOgImage} />
+
+    {includeKatexCss && (
+      <link rel="stylesheet" href="/vendor/katex/katex.min.css" />
+    )}
+
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
+
+    <script is:inline>
+      if (sessionStorage.getItem('hasSeenLoader') === 'true') {
+        document.documentElement.dataset.splashDone = 'true';
+      }
+    </script>
+
+    <ClientRouter />
+  </head>
+  <body>
+    <IconsSprite />
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <LatticeShell />
+
+    <header class="site-header">
+      <nav class="site-nav" aria-label="Primary">
+        <a class="nav-brand" href="/">
+          {PROFILE.name.toUpperCase()} / {PROFILE.handle}
+        </a>
+        <ul class="nav-links">
+          <li>
+            <a href="/" data-nav-target="home" aria-current={isHome ? 'page' : undefined}>Home</a>
+          </li>
+          <li>
+            <a href="/#projects" data-nav-target="work">Work</a>
+          </li>
+          <li>
+            <a href="/blog/" data-nav-target="blog" aria-current={isBlog ? 'page' : undefined}>Blog</a>
+          </li>
+          <li>
+            <a href="/#contact" data-nav-target="contact">Contact</a>
+          </li>
+        </ul>
+
+        <button
+          type="button"
+          class="icon-btn mobile-menu-toggle"
+          id="mobile-menu-toggle"
+          aria-expanded="false"
+          aria-controls="mobile-nav-drawer"
+          aria-label="Toggle navigation menu"
+        >
+          <span class="hamburger-icon-open"><Icon name="menu" /></span>
+          <span class="hamburger-icon-close" hidden><Icon name="close" /></span>
+        </button>
+      </nav>
+
+      <div id="mobile-nav-drawer" class="mobile-nav-drawer" data-open="false" hidden>
+        <ul class="mobile-nav-list">
+          <li>
+            <a href="/" data-mobile-nav data-nav-target="home" aria-current={isHome ? 'page' : undefined}>
+              <Icon name="lattice" size={20} />
+              <span>Home</span>
+            </a>
+          </li>
+          <li>
+            <a href="/#projects" data-mobile-nav data-nav-target="work">
+              <Icon name="branch" size={20} />
+              <span>Work</span>
+            </a>
+          </li>
+          <li>
+            <a href="/blog/" data-mobile-nav data-nav-target="blog" aria-current={isBlog ? 'page' : undefined}>
+              <Icon name="tag" size={20} />
+              <span>Blog</span>
+            </a>
+          </li>
+          <li>
+            <a href="/#contact" data-mobile-nav data-nav-target="contact">
+              <Icon name="mail" size={20} />
+              <span>Contact</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </header>
+
+    <div class="page-shell">
+      <main id="main-content" tabindex="-1">
+        <slot />
+      </main>
+    </div>
+
+    <footer class="site-footer">
+      <span>{PROFILE.name} ({PROFILE.handle}) &middot; {PROFILE.location}</span>
+      <div class="footer-links">
+        <a href="/blog/">Blog</a>
+        <a href="/rss.xml">RSS</a>
+        <a href="/sitemap/">Sitemap</a>
+        <a
+          href="https://github.com/pr60t"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+      </div>
+    </footer>
+
+    <PwaManager />
+    <button
+      type="button"
+      id="mobile-to-top-btn"
+      class="mobile-to-top"
+      data-visible="false"
+      aria-label="Scroll to top"
+    >
+      <Icon name="arrow-up" size={22} />
+    </button>
+    <div id="beat-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <script>
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'auto';
+      }
+
+      function scrollToHashTarget() {
+        if (!window.location.hash) return;
+        const target = document.getElementById(window.location.hash.slice(1));
+        if (target) {
+          requestAnimationFrame(() => {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+        }
+      }
+
+      function initNavLinks() {
+        document.querySelectorAll<HTMLAnchorElement>('a[data-nav-target]').forEach((link) => {
+          if (link.dataset.navBound === 'true') return;
+          link.dataset.navBound = 'true';
+
+          link.addEventListener('click', (e) => {
+            const target = link.dataset.navTarget;
+            const onHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+            if (!onHome) return;
+
+            if (target === 'home') {
+              e.preventDefault();
+              history.replaceState(null, '', '/');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (target === 'work') {
+              e.preventDefault();
+              history.replaceState(null, '', '/#projects');
+              document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (target === 'contact') {
+              e.preventDefault();
+              history.replaceState(null, '', '/#contact');
+              document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          });
+        });
+      }
+
+      function initMobileToTop() {
+        const btn = document.getElementById('mobile-to-top-btn') as HTMLButtonElement | null;
+        if (!btn || btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+
+        const sync = () => {
+          btn.dataset.visible = window.scrollY > 300 ? 'true' : 'false';
+        };
+        window.addEventListener('scroll', sync, { passive: true });
+        sync();
+
+        btn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      function initMobileHamburger() {
+        const toggle = document.getElementById('mobile-menu-toggle') as HTMLButtonElement | null;
+        const drawer = document.getElementById('mobile-nav-drawer') as HTMLElement | null;
+        if (!toggle || !drawer || toggle.dataset.bound === 'true') return;
+        toggle.dataset.bound = 'true';
+
+        const openIcon = toggle.querySelector<HTMLElement>('.hamburger-icon-open');
+        const closeIcon = toggle.querySelector<HTMLElement>('.hamburger-icon-close');
+
+        const setOpen = (isOpen: boolean, restoreFocus = false) => {
+          toggle.setAttribute('aria-expanded', String(isOpen));
+          drawer.dataset.open = String(isOpen);
+          if (isOpen) {
+            drawer.hidden = false;
+            document.body.style.overflow = 'hidden';
+          } else {
+            document.body.style.overflow = '';
+            window.setTimeout(() => {
+              if (drawer.dataset.open === 'false') drawer.hidden = true;
+            }, 220);
+            if (restoreFocus) toggle.focus();
+          }
+          if (openIcon && closeIcon) {
+            openIcon.hidden = isOpen;
+            closeIcon.hidden = !isOpen;
+          }
+        };
+
+        toggle.addEventListener('click', () => {
+          const next = toggle.getAttribute('aria-expanded') !== 'true';
+          setOpen(next);
+        });
+
+        drawer.querySelectorAll<HTMLElement>('[data-mobile-nav]').forEach((item) => {
+          item.addEventListener('click', () => {
+            setOpen(false);
+          });
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && drawer.dataset.open === 'true') {
+            setOpen(false, true);
+          }
+        });
+
+        document.addEventListener('click', (e) => {
+          if (drawer.dataset.open !== 'true') return;
+          const target = e.target as Node;
+          if (!drawer.contains(target) && !toggle.contains(target)) {
+            setOpen(false);
+          }
+        });
+
+        window.addEventListener('resize', () => {
+          if (window.innerWidth >= 768 && drawer.dataset.open === 'true') {
+            setOpen(false);
+          }
+        });
+      }
+
+      document.addEventListener('astro:page-load', () => {
+        scrollToHashTarget();
+        initNavLinks();
+        initMobileToTop();
+        initMobileHamburger();
+      });
+      initNavLinks();
+      initMobileToTop();
+      initMobileHamburger();
+    </script>
+  </body>
+</html>

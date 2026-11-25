@@ -1,0 +1,66 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import BlogList from '@/components/BlogList.astro';
+import { PROFILE } from '@/data/profile';
+import { getAllPosts, getAllTags } from '@/lib/blog';
+import '@/styles/blog.css';
+
+export function getStaticPaths() {
+  const PAGE_SIZE = 10;
+  const allPosts = getAllPosts();
+  const totalPages = Math.max(1, Math.ceil(allPosts.length / PAGE_SIZE));
+  const paths = [];
+  for (let p = 2; p <= totalPages; p += 1) {
+    paths.push({
+      params: { page: String(p) },
+      props: {
+        pageNum: p,
+        totalPages,
+        posts: allPosts.slice((p - 1) * PAGE_SIZE, p * PAGE_SIZE),
+        totalCount: allPosts.length,
+        tags: getAllTags(allPosts),
+      },
+    });
+  }
+  return paths;
+}
+
+const { pageNum, totalPages, posts, totalCount, tags } = Astro.props;
+const prevHref = pageNum === 2 ? '/blog/' : `/blog/page/${pageNum - 1}/`;
+const nextHref = pageNum < totalPages ? `/blog/page/${pageNum + 1}/` : null;
+---
+
+<BaseLayout
+  title={`Blog (Page ${pageNum}) — ${PROFILE.name} (${PROFILE.handle})`}
+  description="Engineering log on multi-tenant RAG security, authorization testing, and privacy tooling."
+>
+  <section class="section-band" aria-labelledby="blog-page-heading">
+    <div class="section-head">
+      <span class="eyebrow">// LOG &middot; PAGE {pageNum} OF {totalPages}</span>
+      <h1 id="blog-page-heading" style="font-size:clamp(38px,6vw,72px);">Engineering Log</h1>
+    </div>
+
+    {tags.length > 0 && (
+      <nav class="tag-bar" aria-label="Filter by tag">
+        <a class="tag-chip" href="/blog/">All ({totalCount})</a>
+        {tags.map((t) => (
+          <a class="tag-chip" href={`/blog/tags/${encodeURIComponent(t.tag)}/`}>
+            {t.tag} ({t.count})
+          </a>
+        ))}
+      </nav>
+    )}
+
+    <BlogList posts={posts} />
+
+    <nav class="pagination" aria-label="Blog pagination">
+      <a class="cta cta-outline" href={prevHref}>&larr; Newer entries</a>
+      <span class="mono-meta">Page {pageNum} of {totalPages}</span>
+      {nextHref ? (
+        <a class="cta cta-outline" href={nextHref}>Older entries &rarr;</a>
+      ) : (
+        <span />
+      )}
+    </nav>
+  </section>
+</BaseLayout>

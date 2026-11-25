@@ -1,0 +1,415 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import BlogList from '@/components/BlogList.astro';
+import Icon from '@/components/Icon.astro';
+import { PROFILE } from '@/data/profile';
+import { getAllPosts } from '@/lib/blog';
+
+const latestPosts = getAllPosts().slice(0, 3);
+---
+
+<BaseLayout
+  title={`${PROFILE.name} (${PROFILE.handle}) — ${PROFILE.role}`}
+  description={`${PROFILE.role}. ${PROFILE.heroSub}`}
+>
+  <section class="hero-grid" aria-labelledby="hero-heading">
+    <div class="hero-copy">
+      <span class="eyebrow" data-matrix-resolve>// TENANT A &middot; TENANT B &middot; TENANT C</span>
+      <h1 id="hero-heading" class="hero-kinetic">
+        {PROFILE.heroHeadlineTop}<br />
+        <em>{PROFILE.heroHeadlineAccent}</em>
+      </h1>
+      <p class="hero-sub hero-kinetic-sub">{PROFILE.heroSub}</p>
+      <p class="hero-meta">
+        {PROFILE.location}. {PROFILE.availability}
+      </p>
+      <div class="cta-row">
+        {PROFILE.contacts.map((c, idx) => (
+          <a
+            class={idx === 0 ? 'cta' : 'cta cta-outline'}
+            href={c.href}
+            target={c.kind === 'email' ? undefined : '_blank'}
+            rel={c.kind === 'email' ? undefined : 'noopener noreferrer'}
+          >
+            <Icon name={c.kind === 'email' ? 'mail' : c.kind === 'github' ? 'branch' : 'profile'} size={20} />
+            <span>{c.label}</span>
+            {c.kind !== 'email' && <Icon name="external" size={16} />}
+          </a>
+        ))}
+      </div>
+      <a class="hero-scroll-cue" id="hero-scroll-cue" href="#rag-heading" aria-label="Scroll to system overview">
+        <Icon name="arrow-down" size={20} />
+        <span>Scroll</span>
+      </a>
+    </div>
+
+    <div class="hero-poster-slot">
+      <figure class="hero-poster-frame">
+        <img
+          src="/poster.svg"
+          alt="Three isolated tenant wireframe shells with a canary probe"
+          width="420"
+          height="340"
+        />
+        <figcaption class="hero-poster-caption">
+          <span>TENANT LATTICE</span>
+          <span>A / B / C</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="sheet-stack">
+  <section class="section-band sheet-section" aria-labelledby="rag-heading">
+    <div class="section-head">
+      <span class="eyebrow" data-matrix-resolve>// 01 &middot; THE SYSTEM I AUDIT</span>
+      <h2 id="rag-heading">Where multi-tenant RAG boundaries fail.</h2>
+    </div>
+    <div class="card-grid">
+      {PROFILE.ragBeats.map((beat) => (
+        <article class="card">
+          <span class="card-label">{beat.marker}</span>
+          <h3>{beat.title}</h3>
+          <p style="margin-top:0.65rem;">{beat.summary}</p>
+          <hr class="rule-dotted" />
+          <p class="mono-meta">{beat.telemetry}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section-band sheet-section" id="projects" aria-labelledby="firedamp-heading">
+    <div class="section-head">
+      <span class="eyebrow">{PROFILE.firedamp.eyebrow} &middot; {PROFILE.firedamp.year}</span>
+      <h2 id="firedamp-heading">{PROFILE.firedamp.title}</h2>
+    </div>
+
+    <div class="case-file-panel" id="firedamp-sequence" data-scene-hover="firedamp">
+      <div class="case-file-header">
+        <div>
+          <p>{PROFILE.firedamp.summary}</p>
+          <div class="pill-row">
+            {PROFILE.firedamp.stack.map((tech) => (
+              <span class="pill pill--amber">{tech}</span>
+            ))}
+          </div>
+        </div>
+        <a
+          class="cta cta-outline"
+          href={PROFILE.firedamp.repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View on GitHub
+        </a>
+      </div>
+
+      {PROFILE.firedamp.highlights && (
+        <ul style="padding-left:1.25rem;color:var(--cream-dim);display:grid;gap:0.45rem;">
+          {PROFILE.firedamp.highlights.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      )}
+
+      <div class="case-steps">
+        {PROFILE.firedampSteps.map((step) => (
+          <div class="case-step">
+            <span
+              class={
+                step.id === 'detect'
+                  ? 'case-step-tag case-step-tag--coral'
+                  : 'case-step-tag'
+              }
+            >
+              {step.marker}
+            </span>
+            <h3 style="font-size:1.05rem;">{step.title}</h3>
+            <p style="font-size:0.92rem;margin-top:0.45rem;">{step.summary}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <article class="card" style="margin-top:1.25rem;" data-scene-hover="chrona">
+      <div class="case-file-header" style="margin-bottom:1.1rem;padding-bottom:1rem;">
+        <div>
+          <span class="card-label card-label--mist">{PROFILE.chrona.eyebrow}</span>
+          <h3>{PROFILE.chrona.title}</h3>
+          {PROFILE.chrona.subtitle && (
+            <p class="mono-meta" style="margin-top:0.25rem;color:var(--amber);">
+              {PROFILE.chrona.subtitle}
+            </p>
+          )}
+        </div>
+        <a
+          class="cta cta-outline"
+          href={PROFILE.chrona.repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Icon name="branch" size={18} />
+          <span>View on GitHub</span>
+          <Icon name="external" size={16} />
+        </a>
+      </div>
+
+      <p>{PROFILE.chrona.summary}</p>
+
+      {PROFILE.chrona.highlights && (
+        <ul style="margin-top:1rem;padding-left:1.25rem;color:var(--cream-dim);display:grid;gap:0.45rem;">
+          {PROFILE.chrona.highlights.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      )}
+
+      <div class="pill-row">
+        {PROFILE.chrona.stack.map((tech) => (
+          <span class="pill">{tech}</span>
+        ))}
+      </div>
+    </article>
+  </section>
+
+  <section class="section-band sheet-section" id="experience" aria-labelledby="experience-heading">
+    <div class="section-head">
+      <span class="eyebrow">// 02 &middot; WORK HISTORY</span>
+      <h2 id="experience-heading">Experience</h2>
+    </div>
+
+    <div class="stat-strip" aria-label="Verified summary metrics">
+      {PROFILE.verifiableStats.map((stat) => (
+        <div class="stat-tile">{stat}</div>
+      ))}
+    </div>
+
+    <div class="card-grid-2">
+      {PROFILE.experience.map((job) => (
+        <article class="card">
+          <span class="card-label">{job.period}</span>
+          <h3>{job.org}</h3>
+          <p class="mono-meta" style="margin-top:0.25rem;">{job.role}</p>
+          <p style="margin-top:0.85rem;">{job.summary}</p>
+          {job.stack && (
+            <div class="pill-row">
+              {job.stack.map((s) => (
+                <span class="pill">{s}</span>
+              ))}
+            </div>
+          )}
+          {(job.url || job.repoUrl) && (
+            <div class="cta-row" style="margin-top:1.25rem;">
+              {job.url && (
+                <a
+                  class="pill pill--amber"
+                  href={job.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  spacelegion.org
+                </a>
+              )}
+              {job.repoUrl && (
+                <a
+                  class="pill"
+                  href={job.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  github.com/space-legion
+                </a>
+              )}
+            </div>
+          )}
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="section-band sheet-section" id="foundations" aria-labelledby="foundations-heading">
+    <div class="section-head">
+      <span class="eyebrow">// 03 &middot; FOUNDATIONS</span>
+      <h2 id="foundations-heading">Education &amp; Stack</h2>
+    </div>
+
+    <div class="card-grid-2" style="margin-bottom:1.5rem;">
+      {PROFILE.education.map((edu) => (
+        <article class="card">
+          <span class="card-label">{edu.period} &middot; {edu.note}</span>
+          <h3>{edu.degree}</h3>
+          <p class="mono-meta" style="margin-top:0.25rem;">{edu.institution}</p>
+          <ul class="skill-items" style="margin-top:1rem;">
+            {edu.coursework.map((course) => (
+              <li>{course}</li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+
+    <div class="skills-list">
+      {PROFILE.skills.map((group) => (
+        <div class="skill-group">
+          <span class="card-label">{group.label}</span>
+          <ul class="skill-items">
+            {group.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="section-band sheet-section" id="writing" aria-labelledby="writing-heading">
+    <div class="section-head" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:1rem;">
+      <div>
+        <span class="eyebrow">// 04 &middot; LATEST WRITING</span>
+        <h2 id="writing-heading">Engineering Log</h2>
+      </div>
+      <a class="cta cta-outline" href="/blog/">All posts</a>
+    </div>
+
+    <BlogList posts={latestPosts} />
+  </section>
+
+  <section class="section-band sheet-section" id="contact" aria-labelledby="contact-heading">
+    <div class="section-head">
+      <span class="eyebrow">// 05 &middot; OPEN CHANNEL</span>
+      <h2 id="contact-heading">Let&rsquo;s test something worth breaking.</h2>
+    </div>
+    <p>
+      {PROFILE.location}. {PROFILE.availability}
+    </p>
+    <div class="cta-row">
+      {PROFILE.contacts.map((c, idx) => (
+        <a
+          class={idx === 0 ? 'cta' : 'cta cta-outline'}
+          href={c.href}
+          target={c.kind === 'email' ? undefined : '_blank'}
+          rel={c.kind === 'email' ? undefined : 'noopener noreferrer'}
+        >
+          <Icon name={c.kind === 'email' ? 'mail' : c.kind === 'github' ? 'branch' : 'profile'} size={20} />
+          <span>{c.label}</span>
+          {c.kind !== 'email' && <Icon name="external" size={16} />}
+        </a>
+      ))}
+    </div>
+  </section>
+  </div>
+
+  <script>
+    const cue = document.getElementById('hero-scroll-cue');
+    if (cue) {
+      window.addEventListener(
+        'scroll',
+        () => {
+          cue.dataset.scrolled = 'true';
+        },
+        { once: true, passive: true }
+      );
+    }
+
+    function initHomeAnimations() {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const heroCopy = document.querySelector<HTMLElement>('.hero-copy');
+
+      const activateHero = () => {
+        if (heroCopy) heroCopy.dataset.revealed = 'true';
+      };
+
+      if (reduced || document.documentElement.dataset.splashDone === 'true') {
+        activateHero();
+      } else {
+        window.addEventListener('lattice:splash-done', activateHero, { once: true });
+        window.setTimeout(activateHero, 1400);
+      }
+
+      // Spatial card entrance choreography (once: true, 70ms stagger)
+      const cards = Array.from(
+        document.querySelectorAll<HTMLElement>('.card, .case-file-panel, .stat-tile, .skill-group')
+      );
+
+      if (reduced) {
+        cards.forEach((c) => c.classList.add('is-visible'));
+        return;
+      }
+
+      cards.forEach((c) => {
+        c.classList.add('reveal-card');
+        const parent = c.parentElement;
+        if (parent) {
+          const siblings = Array.from(parent.children);
+          const idx = siblings.indexOf(c);
+          c.style.setProperty('--stagger-idx', String(Math.max(0, Math.min(6, idx))));
+        }
+      });
+
+      const cardObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              cardObserver.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -24px 0px' }
+      );
+      cards.forEach((c) => cardObserver.observe(c));
+
+      // Restrained Matrix-Blur / Glyph-Resolve on high-signal labels (once)
+      const GLYPHS = '01ABCDEF_./:';
+      const resolveTargets = document.querySelectorAll<HTMLElement>('[data-matrix-resolve]');
+
+      const runMatrixResolve = (el: HTMLElement) => {
+        if (el.dataset.resolved === 'true') return;
+        el.dataset.resolved = 'true';
+        const finalText = el.textContent ?? '';
+        const duration = 560;
+        const start = performance.now();
+        el.classList.add('matrix-resolving');
+
+        const step = (now: number) => {
+          const t = Math.min(1, (now - start) / duration);
+          const lockedCount = Math.floor(t * finalText.length);
+          let out = '';
+          for (let i = 0; i < finalText.length; i += 1) {
+            const ch = finalText[i]!;
+            if (i < lockedCount || ch === ' ' || ch === '/' || ch === '·') {
+              out += ch;
+            } else {
+              out += GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+            }
+          }
+          el.textContent = out;
+          if (t < 1) {
+            requestAnimationFrame(step);
+          } else {
+            el.textContent = finalText;
+            el.classList.remove('matrix-resolving');
+          }
+        };
+
+        requestAnimationFrame(step);
+      };
+
+      const textObserver = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              runMatrixResolve(entry.target as HTMLElement);
+              textObserver.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.2 }
+      );
+      resolveTargets.forEach((el) => textObserver.observe(el));
+    }
+
+    initHomeAnimations();
+    document.addEventListener('astro:page-load', initHomeAnimations);
+  </script>
+</BaseLayout>

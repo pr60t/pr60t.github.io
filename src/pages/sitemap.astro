@@ -1,0 +1,56 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { PROFILE } from '@/data/profile';
+import { formatDisplayDate, getAllPosts, getAllTags } from '@/lib/blog';
+
+const posts = getAllPosts();
+const tags = getAllTags(posts);
+---
+
+<BaseLayout
+  title={`Sitemap — ${PROFILE.name} (${PROFILE.handle})`}
+  description="Complete route index for pr60t.github.io."
+>
+  <section class="section-band" aria-labelledby="sitemap-heading">
+    <div class="section-head">
+      <span class="eyebrow">// SITEMAP</span>
+      <h1 id="sitemap-heading" style="font-size:clamp(38px,6vw,72px);">Site Index</h1>
+    </div>
+
+    <div class="card-grid-2">
+      <div class="card">
+        <span class="card-label">CORE ROUTES</span>
+        <ul style="list-style:none;display:grid;gap:0.55rem;margin-top:0.5rem;">
+          <li><a href="/">/ &mdash; Home</a></li>
+          <li><a href="/blog/">/blog/ &mdash; Engineering Log</a></li>
+          <li><a href="/rss.xml">/rss.xml &mdash; RSS Feed</a></li>
+          <li><a href="/sitemap-index.xml">/sitemap-index.xml &mdash; XML Sitemap</a></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="card-label">TAGS</span>
+        <div class="pill-row" style="margin-top:0.5rem;">
+          {tags.map((t) => (
+            <a class="pill" href={`/blog/tags/${encodeURIComponent(t.tag)}/`}>
+              {t.tag} ({t.count})
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.25rem;">
+      <span class="card-label">LOG ENTRIES ({posts.length})</span>
+      <ul style="list-style:none;display:grid;gap:0.55rem;margin-top:0.75rem;">
+        {posts.map((post) => (
+          <li>
+            <span class="mono-meta">{formatDisplayDate(post.dateISO)}</span>
+            {' '}
+            <a href={`/blog/${post.slug}/`}>{post.title}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>

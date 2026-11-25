@@ -1,0 +1,158 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import BlogList from '@/components/BlogList.astro';
+import Icon from '@/components/Icon.astro';
+import { PROFILE } from '@/data/profile';
+import { getAllPosts, getAllTags } from '@/lib/blog';
+import '@/styles/blog.css';
+
+const PAGE_SIZE = 10;
+const allPosts = getAllPosts();
+const tags = getAllTags(allPosts);
+const totalPages = Math.max(1, Math.ceil(allPosts.length / PAGE_SIZE));
+const pagePosts = allPosts.slice(0, PAGE_SIZE);
+---
+
+<BaseLayout
+  title={`Blog — ${PROFILE.name} (${PROFILE.handle})`}
+  description="Engineering log on multi-tenant RAG security, authorization testing, and privacy tooling."
+>
+  <section class="section-band" aria-labelledby="blog-index-heading">
+    <div class="section-head">
+      <span class="eyebrow">// LOG &middot; {allPosts.length} ENTRIES</span>
+      <h1 id="blog-index-heading" style="font-size:clamp(38px,6vw,72px);">Engineering Log</h1>
+      <p style="margin-top:0.9rem;">
+        Notes on multi-tenant RAG isolation, canary testing, and systems security.
+      </p>
+    </div>
+
+    <div class="blog-control-bar">
+      <a class="pill-btn blog-home-btn" href="/">
+        <Icon name="arrow-left" size={18} />
+        <span>Home</span>
+      </a>
+
+      <div class="blog-search-wrap">
+        <span class="blog-search-icon" aria-hidden="true">
+          <Icon name="search" size={18} />
+        </span>
+        <label for="blog-live-search" class="sr-only">Search posts by title</label>
+        <input
+          id="blog-live-search"
+          class="blog-search-input"
+          type="text"
+          placeholder="Search posts by title..."
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          id="blog-search-clear"
+          class="blog-search-clear"
+          aria-label="Clear search"
+          hidden
+        >
+          <Icon name="close" size={16} />
+        </button>
+      </div>
+    </div>
+
+    {tags.length > 0 && (
+      <nav class="tag-bar" aria-label="Filter by tag">
+        <a class="tag-chip" href="/blog/" aria-current="page">All ({allPosts.length})</a>
+        {tags.map((t) => (
+          <a class="tag-chip" href={`/blog/tags/${encodeURIComponent(t.tag)}/`}>
+            {t.tag} ({t.count})
+          </a>
+        ))}
+      </nav>
+    )}
+
+    <div id="blog-list-container">
+      <BlogList posts={pagePosts} />
+    </div>
+
+    <div id="blog-empty-state" class="blog-empty-state" hidden>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+        width="56"
+        height="56"
+        fill="none"
+        stroke="#7FB8BC"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <rect x="12" y="8" width="32" height="44" rx="4" />
+        <line x1="20" y1="20" x2="36" y2="20" />
+        <line x1="20" y1="28" x2="30" y2="28" />
+        <circle cx="42" cy="42" r="10" fill="#0A2A2D" stroke="#FFB547" />
+        <line x1="49" y1="49" x2="56" y2="56" stroke="#FFB547" />
+        <line x1="36" y1="48" x2="48" y2="36" stroke="#E76F51" />
+      </svg>
+      <p id="blog-empty-msg" class="blog-empty-msg">No articles matching your query.</p>
+      <button type="button" id="blog-empty-clear-btn" class="pill-btn">
+        Clear search
+      </button>
+    </div>
+
+    {totalPages > 1 && (
+      <nav class="pagination" aria-label="Blog pagination">
+        <span class="mono-meta">Page 1 of {totalPages}</span>
+        <a class="cta cta-outline" href="/blog/page/2/">Older entries &rarr;</a>
+      </nav>
+    )}
+  </section>
+
+  <script>
+    function initLiveBlogSearch() {
+      const input = document.getElementById('blog-live-search') as HTMLInputElement | null;
+      const clearBtn = document.getElementById('blog-search-clear') as HTMLButtonElement | null;
+      const emptyState = document.getElementById('blog-empty-state');
+      const emptyMsg = document.getElementById('blog-empty-msg');
+      const emptyClearBtn = document.getElementById('blog-empty-clear-btn');
+      const rows = Array.from(document.querySelectorAll<HTMLElement>('.blog-log-row[data-post-title]'));
+
+      if (!input || !clearBtn || !emptyState || !emptyMsg || !emptyClearBtn) return;
+      if (input.dataset.bound === 'true') return;
+      input.dataset.bound = 'true';
+
+      const applyFilter = () => {
+        const raw = input.value;
+        const normalized = raw.toLowerCase().trim();
+        clearBtn.hidden = raw.length === 0;
+
+        const queryWords = normalized ? normalized.split(/\s+/).filter(Boolean) : [];
+        let matches = 0;
+
+        for (const row of rows) {
+          const title = row.dataset.postTitle ?? '';
+          const ok = queryWords.length === 0 || queryWords.every((w) => title.includes(w));
+          row.hidden = !ok;
+          if (ok) matches += 1;
+        }
+
+        if (queryWords.length > 0 && matches === 0) {
+          emptyMsg.textContent = `No articles matching "${raw.trim()}"`;
+          emptyState.hidden = false;
+        } else {
+          emptyState.hidden = true;
+        }
+      };
+
+      const resetSearch = () => {
+        input.value = '';
+        applyFilter();
+        input.focus();
+      };
+
+      input.addEventListener('input', applyFilter);
+      clearBtn.addEventListener('click', resetSearch);
+      emptyClearBtn.addEventListener('click', resetSearch);
+    }
+
+    initLiveBlogSearch();
+    document.addEventListener('astro:page-load', initLiveBlogSearch);
+  </script>
+</BaseLayout>

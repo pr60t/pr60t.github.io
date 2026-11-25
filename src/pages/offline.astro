@@ -1,0 +1,28 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/Icon.astro';
+import { PROFILE } from '@/data/profile';
+---
+
+<BaseLayout
+  title={`Offline — ${PROFILE.name} (${PROFILE.handle})`}
+  description="You are currently offline."
+>
+  <section class="section-band" aria-labelledby="offline-heading">
+    <span class="eyebrow">// OFFLINE &middot; CACHED SHELL</span>
+    <h1 id="offline-heading" style="margin-top:0.75rem;">No signal.</h1>
+    <p style="margin-top:1.25rem;">
+      You are currently offline. Previously visited pages and the engineering log index remain available from cache.
+    </p>
+    <div class="cta-row">
+      <a class="cta" href="/">
+        <Icon name="lattice" size={20} />
+        <span>Home</span>
+      </a>
+      <a class="cta cta-outline" href="/blog/">
+        <Icon name="tag" size={20} />
+        <span>Cached Blog</span>
+      </a>
+    </div>
+  </section>
+</BaseLayout>

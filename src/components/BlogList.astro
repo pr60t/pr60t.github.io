@@ -1,0 +1,38 @@
+---
+import { formatDisplayDate, type BlogPost } from '@/lib/blog';
+
+interface Props {
+  posts: readonly BlogPost[];
+}
+
+const { posts } = Astro.props;
+---
+
+{posts.length === 0 ? (
+  <p class="mono-meta">No published entries yet.</p>
+) : (
+  <ul class="blog-log">
+    {posts.map((post) => (
+      <li class="blog-log-row" data-post-title={post.title.toLowerCase()}>
+        <a class="blog-log-link" href={`/blog/${post.slug}/`}>
+          <time class="blog-log-date" datetime={post.dateISO}>
+            {formatDisplayDate(post.dateISO)}
+          </time>
+          <div>
+            <div class="blog-log-title">
+              {post.title}
+              {post.draft && <span class="mono-meta"> [DRAFT]</span>}
+            </div>
+            <p class="blog-log-desc">{post.description}</p>
+          </div>
+          <div class="blog-log-meta">
+            <span class="mono-meta">{post.readingTimeMinutes} min</span>
+            {post.tags.map((tag) => (
+              <span class="tag-chip">{tag}</span>
+            ))}
+          </div>
+        </a>
+      </li>
+    ))}
+  </ul>
+)}

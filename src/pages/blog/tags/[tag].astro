@@ -1,0 +1,57 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import BlogList from '@/components/BlogList.astro';
+import { PROFILE } from '@/data/profile';
+import { getAllPosts, getAllTags, type BlogPost } from '@/lib/blog';
+import '@/styles/blog.css';
+
+export function getStaticPaths() {
+  const allPosts = getAllPosts();
+  const tags = getAllTags(allPosts);
+  return tags.map((t) => ({
+    params: { tag: t.tag },
+    props: {
+      tag: t.tag,
+      posts: allPosts.filter((p) => p.tags.includes(t.tag)),
+      allTags: tags,
+      totalCount: allPosts.length,
+    },
+  }));
+}
+
+interface Props {
+  tag: string;
+  posts: readonly BlogPost[];
+  allTags: Array<{ tag: string; count: number }>;
+  totalCount: number;
+}
+
+const { tag, posts, allTags, totalCount } = Astro.props;
+---
+
+<BaseLayout
+  title={`Tag: ${tag} — ${PROFILE.name} (${PROFILE.handle})`}
+  description={`Engineering log entries tagged "${tag}".`}
+>
+  <section class="section-band" aria-labelledby="tag-heading">
+    <div class="section-head">
+      <span class="eyebrow">// TAG &middot; {posts.length} ENTRY(S)</span>
+      <h1 id="tag-heading" style="font-size:clamp(38px,6vw,72px);">#{tag}</h1>
+    </div>
+
+    <nav class="tag-bar" aria-label="Filter by tag">
+      <a class="tag-chip" href="/blog/">All ({totalCount})</a>
+      {allTags.map((t) => (
+        <a
+          class="tag-chip"
+          href={`/blog/tags/${encodeURIComponent(t.tag)}/`}
+          aria-current={t.tag === tag ? 'page' : undefined}
+        >
+          {t.tag} ({t.count})
+        </a>
+      ))}
+    </nav>
+
+    <BlogList posts={posts} />
+  </section>
+</BaseLayout>

@@ -1,0 +1,141 @@
+---
+import Icon from './Icon.astro';
+---
+<dialog id="search-dialog" class="search-dialog" aria-labelledby="search-dialog-title">
+  <div class="search-dialog-head">
+    <span id="search-dialog-title" class="eyebrow">// SEARCH LOG</span>
+    <button type="button" id="close-search-btn" class="icon-btn" aria-label="Close search">
+      <Icon name="close" />
+    </button>
+  </div>
+  <label for="search-query-input" class="mono-meta" style="display:block;margin-bottom:0.5rem;">
+    Query posts, tags, or topics
+  </label>
+  <input
+    id="search-query-input"
+    class="search-input"
+    type="search"
+    placeholder="Type to search..."
+    autocomplete="off"
+  />
+  <p id="search-status" class="mono-meta" style="margin-top:0.75rem;"></p>
+  <ul id="search-results" class="search-results" aria-live="polite"></ul>
+</dialog>
+
+<script>
+  function initSearchModal() {
+    const dialog = document.getElementById('search-dialog') as HTMLDialogElement | null;
+    const openBtn = document.getElementById('open-search-btn');
+    const closeBtn = document.getElementById('close-search-btn');
+    const input = document.getElementById('search-query-input') as HTMLInputElement | null;
+    const status = document.getElementById('search-status');
+    const resultsList = document.getElementById('search-results');
+
+    if (!dialog || !openBtn || !closeBtn || !input || !status || !resultsList) return;
+    if (dialog.dataset.bound === 'true') return;
+    dialog.dataset.bound = 'true';
+
+    let pagefindModule: {
+      init?: () => Promise<void>;
+      search: (q: string) => Promise<{
+        results: Array<{ data: () => Promise<{ url: string; meta?: { title?: string }; excerpt?: string }> }>;
+      }>;
+    } | null = null;
+
+    async function ensurePagefind() {
+      if (pagefindModule) return pagefindModule;
+      try {
+        const pfPath = '/pagefind/pagefind.js';
+        const mod = await import(/* @vite-ignore */ pfPath);
+        if (typeof mod.init === 'function') {
+          await mod.init();
+        }
+        pagefindModule = mod;
+        return mod;
+      } catch {
+        status!.textContent = 'Search index is generated on production build (npm run build).';
+        return null;
+      }
+    }
+
+    async function runSearch(query: string) {
+      resultsList!.innerHTML = '';
+      const trimmed = query.trim();
+      if (!trimmed) {
+        status!.textContent = 'Enter a keyword to search the log.';
+        return;
+      }
+      const pf = await ensurePagefind();
+      if (!pf) return;
+
+      status!.textContent = 'Searching...';
+      const res = await pf.search(trimmed);
+      const top = res.results.slice(0, 8);
+      if (top.length === 0) {
+        status!.textContent = `No matches for "${trimmed}".`;
+        return;
+      }
+
+      status!.textContent = `${res.results.length} result(s)`;
+      for (const item of top) {
+        const data = await item.data();
+        const li = document.createElement('li');
+        li.className = 'search-result-item';
+        const a = document.createElement('a');
+        a.href = data.url;
+        const title = document.createElement('strong');
+        title.style.display = 'block';
+        title.style.color = 'var(--cream)';
+        title.textContent = data.meta?.title ?? data.url;
+        const excerpt = document.createElement('span');
+        excerpt.className = 'mono-meta';
+        excerpt.style.display = 'block';
+        excerpt.style.marginTop = '0.25rem';
+        excerpt.textContent = (data.excerpt ?? '').replace(/<[^>]+>/g, '');
+        a.append(title, excerpt);
+        li.appendChild(a);
+        resultsList!.appendChild(li);
+      }
+    }
+
+    function openDialog() {
+      if (!dialog!.open) {
+        history.pushState({ overlay: 'search' }, '');
+        dialog!.showModal();
+        input!.focus();
+        void ensurePagefind();
+      }
+    }
+
+    function closeDialog() {
+      if (dialog!.open) dialog!.close();
+      if (history.state?.overlay === 'search') {
+        history.back();
+      }
+    }
+
+    openBtn.addEventListener('click', openDialog);
+    closeBtn.addEventListener('click', closeDialog);
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeDialog();
+    });
+    window.addEventListener('popstate', () => {
+      if (dialog!.open) dialog!.close();
+    });
+    input.addEventListener('input', () => {
+      void runSearch(input.value);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (dialog.open) dialog.close();
+        else openDialog();
+      }
+    });
+  }
+
+  initSearchModal();
+  document.addEventListener('astro:after-swap', initSearchModal);
+  document.addEventListener('astro:page-load', initSearchModal);
+</script>

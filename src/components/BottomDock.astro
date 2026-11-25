@@ -1,0 +1,95 @@
+---
+import Icon from './Icon.astro';
+
+const currentPath = Astro.url.pathname;
+const isHome = currentPath === '/' || currentPath === '/index.html';
+const isBlog = currentPath.startsWith('/blog');
+---
+
+<nav class="bottom-dock" aria-label="Mobile navigation">
+  <a class="dock-item" href="/" data-dock-target="home" data-astro-reload aria-current={isHome ? 'page' : undefined}>
+    <Icon name="lattice" />
+    <span>Home</span>
+  </a>
+  <a class="dock-item" href="/#projects" data-dock-target="work" data-astro-reload>
+    <Icon name="branch" />
+    <span>Work</span>
+  </a>
+  <a class="dock-item" href="/blog/" data-dock-target="blog" aria-current={isBlog ? 'page' : undefined}>
+    <Icon name="tag" />
+    <span>Blog</span>
+  </a>
+  <button type="button" class="dock-item" id="dock-search-btn" aria-label="Search blog posts">
+    <Icon name="search" />
+    <span>Search</span>
+  </button>
+  <a class="dock-item" href="/#contact" data-dock-target="contact" data-astro-reload>
+    <Icon name="mail" />
+    <span>Contact</span>
+  </a>
+</nav>
+
+<button
+  type="button"
+  id="to-top-btn"
+  class="fab-top"
+  hidden
+  aria-label="Scroll to top"
+>
+  <Icon name="arrow-up" />
+</button>
+
+<script>
+  function initDockAndTop() {
+    const dockSearch = document.getElementById('dock-search-btn');
+    const headerSearch = document.getElementById('open-search-btn');
+    const toTop = document.getElementById('to-top-btn') as HTMLButtonElement | null;
+
+    if (dockSearch && headerSearch && dockSearch.dataset.bound !== 'true') {
+      dockSearch.dataset.bound = 'true';
+      dockSearch.addEventListener('click', () => headerSearch.click());
+    }
+
+    // Reliable Home / Work / Contact navigation across Astro view transitions
+    document.querySelectorAll<HTMLAnchorElement>('.bottom-dock a[data-dock-target]').forEach((link) => {
+      if (link.dataset.bound === 'true') return;
+      link.dataset.bound = 'true';
+
+      link.addEventListener('click', (e) => {
+        const target = link.dataset.dockTarget;
+        const onHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+
+        if (target === 'home' && onHome) {
+          e.preventDefault();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (target === 'work' && onHome) {
+          e.preventDefault();
+          document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else if (target === 'contact' && onHome) {
+          e.preventDefault();
+          document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Update active state immediately for tactile app feedback
+        document.querySelectorAll('.bottom-dock .dock-item').forEach((el) => el.removeAttribute('aria-current'));
+        link.setAttribute('aria-current', 'page');
+      });
+    });
+
+    if (toTop && toTop.dataset.bound !== 'true') {
+      toTop.dataset.bound = 'true';
+      const syncTop = () => {
+        toTop.hidden = window.scrollY < window.innerHeight * 0.9;
+      };
+      window.addEventListener('scroll', syncTop, { passive: true });
+      syncTop();
+
+      toTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+  }
+
+  initDockAndTop();
+  document.addEventListener('astro:page-load', initDockAndTop);
+</script>

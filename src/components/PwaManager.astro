@@ -1,0 +1,54 @@
+<div id="sw-update-toast" class="pwa-toast" role="status" aria-live="polite" hidden>
+  <span>New version, tap to refresh</span>
+  <button type="button" id="sw-refresh-btn" class="pill-btn">Refresh</button>
+</div>
+
+{import.meta.env.DEV && (
+  <div id="dev-vitals-overlay" class="dev-vitals" aria-hidden="true">
+    DEV VITALS: measuring...
+  </div>
+)}
+
+<script>
+  function initPwa() {
+    const updateToast = document.getElementById('sw-update-toast');
+    const refreshBtn = document.getElementById('sw-refresh-btn');
+
+    if ('serviceWorker' in navigator && import.meta.env.PROD) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        reg.addEventListener('updatefound', () => {
+          const worker = reg.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', () => {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller && updateToast) {
+              updateToast.hidden = false;
+              refreshBtn?.addEventListener('click', () => {
+                worker.postMessage({ type: 'SKIP_WAITING' });
+                window.location.reload();
+              });
+            }
+          });
+        });
+      }).catch(() => {});
+    }
+
+    if (import.meta.env.DEV) {
+      const vitalsEl = document.getElementById('dev-vitals-overlay');
+      if (vitalsEl) {
+        import('web-vitals').then(({ onLCP, onINP, onCLS }) => {
+          const metrics: Record<string, string> = {};
+          const render = () => {
+            vitalsEl.textContent = Object.entries(metrics)
+              .map(([k, v]) => `${k}:${v}`)
+              .join(' | ');
+          };
+          onLCP((m) => { metrics.LCP = `${Math.round(m.value)}ms`; render(); });
+          onINP((m) => { metrics.INP = `${Math.round(m.value)}ms`; render(); });
+          onCLS((m) => { metrics.CLS = m.value.toFixed(3); render(); });
+        }).catch(() => {});
+      }
+    }
+  }
+
+  initPwa();
+</script>

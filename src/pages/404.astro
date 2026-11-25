@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { PROFILE } from '@/data/profile';
+---
+
+<BaseLayout
+  title={`404 — ${PROFILE.name} (${PROFILE.handle})`}
+  description="Route not found."
+>
+  <section class="section-band" aria-labelledby="not-found-heading">
+    <span class="eyebrow" style="color:var(--coral);">// 404 &middot; BOUNDARY MISS</span>
+    <h1 id="not-found-heading" style="margin-top:0.75rem;">Nothing here.</h1>
+    <p style="margin-top:1.25rem;">
+      The requested path does not exist in this tenant.
+    </p>
+    <div class="cta-row">
+      <a class="cta" href="/">Return home</a>
+      <a class="cta cta-outline" href="/blog/">Open engineering log</a>
+    </div>
+  </section>
+</BaseLayout>

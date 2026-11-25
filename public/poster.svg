@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 340" fill="none" role="img" aria-label="Three isolated tenant wireframe shells with a canary probe">
+  <rect width="420" height="340" rx="14" fill="#0A2A2D"/>
+  <g stroke="#1C5257" stroke-width="1" stroke-dasharray="3 5">
+    <line x1="20" y1="70" x2="400" y2="70"/>
+    <line x1="20" y1="170" x2="400" y2="170"/>
+    <line x1="20" y1="270" x2="400" y2="270"/>
+  </g>
+  <!-- Tenant A (Amber) -->
+  <g stroke="#FFB547" stroke-width="1.6">
+    <rect x="36" y="96" width="96" height="96"/>
+    <rect x="54" y="78" width="96" height="96" stroke-opacity="0.55"/>
+    <line x1="36" y1="96" x2="54" y2="78"/>
+    <line x1="132" y1="96" x2="150" y2="78"/>
+    <line x1="36" y1="192" x2="54" y2="174"/>
+    <line x1="132" y1="192" x2="150" y2="174"/>
+  </g>
+  <!-- Tenant B (Cream) -->
+  <g stroke="#F4E9D3" stroke-width="1.4" stroke-opacity="0.85">
+    <rect x="162" y="130" width="96" height="96"/>
+    <rect x="180" y="112" width="96" height="96" stroke-opacity="0.45"/>
+    <line x1="162" y1="130" x2="180" y2="112"/>
+    <line x1="258" y1="130" x2="276" y2="112"/>
+    <line x1="162" y1="226" x2="180" y2="208"/>
+    <line x1="258" y1="226" x2="276" y2="208"/>
+  </g>
+  <!-- Tenant C (Mist) -->
+  <g stroke="#7FB8BC" stroke-width="1.4" stroke-opacity="0.85">
+    <rect x="288" y="96" width="96" height="96"/>
+    <rect x="306" y="78" width="96" height="96" stroke-opacity="0.45"/>
+    <line x1="288" y1="96" x2="306" y2="78"/>
+    <line x1="384" y1="96" x2="402" y2="78"/>
+    <line x1="288" y1="192" x2="306" y2="174"/>
+    <line x1="384" y1="192" x2="402" y2="174"/>
+  </g>
+  <!-- Probe & ring (Coral) -->
+  <line x1="148" y1="144" x2="210" y2="168" stroke="#E76F51" stroke-width="1.8" stroke-dasharray="4 4"/>
+  <circle cx="148" cy="144" r="14" stroke="#E76F51" stroke-width="1.5" stroke-opacity="0.8"/>
+  <circle cx="148" cy="144" r="4.5" fill="#E76F51"/>
+  <circle cx="92" cy="134" r="3" fill="#FFB547"/>
+  <circle cx="220" cy="166" r="3" fill="#F4E9D3"/>
+  <circle cx="342" cy="136" r="3" fill="#7FB8BC"/>
+  <text x="36" y="294" fill="#7FB8BC" font-family="monospace" font-size="11" letter-spacing="2">TENANT LATTICE // STATIC FALLBACK</text>
+</svg>
