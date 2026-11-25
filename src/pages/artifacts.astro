@@ -1,0 +1,226 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Icon from '@/components/Icon.astro';
+import { ARTIFACTS, PROFILE } from '@/data/profile';
+import '@/styles/blog.css';
+---
+
+<BaseLayout
+  title={`Artifacts — ${PROFILE.name} (${PROFILE.handle})`}
+  description="Open-source security tooling and Android engineering builds by Arun Bobby (pr60t)."
+>
+  <section class="section-band" aria-labelledby="artifacts-heading">
+    <div class="section-head">
+      <span class="eyebrow">// ARTIFACTS &middot; {ARTIFACTS.length} BUILDS</span>
+      <h1 id="artifacts-heading" style="font-size:clamp(38px,6vw,72px);">Artifacts</h1>
+      <p style="margin-top:0.9rem;">
+        Security auditing tools and Android applications with full architecture notes and source repositories.
+      </p>
+    </div>
+
+    <div class="blog-control-bar">
+      <a class="pill-btn blog-home-btn" href="/">
+        <Icon name="arrow-left" size={18} />
+        <span>Home</span>
+      </a>
+
+      <div class="blog-search-wrap">
+        <span class="blog-search-icon" aria-hidden="true">
+          <Icon name="search" size={18} />
+        </span>
+        <label for="artifacts-live-search" class="sr-only">Search artifacts</label>
+        <input
+          id="artifacts-live-search"
+          class="blog-search-input"
+          type="text"
+          placeholder="Search artifacts by title, stack, or summary..."
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          id="artifacts-search-clear"
+          class="blog-search-clear"
+          aria-label="Clear search"
+          hidden
+        >
+          <Icon name="close" size={16} />
+        </button>
+      </div>
+    </div>
+
+    <div id="artifacts-list" class="artifacts-grid">
+      {ARTIFACTS.map((item) => {
+        const searchBlob = [
+          item.title,
+          item.subtitle ?? '',
+          item.summary,
+          ...item.stack,
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        return (
+          <article
+            id={item.id}
+            class="artifact-card"
+            data-search-text={searchBlob}
+            data-tags={item.stack.map((s) => s.toLowerCase()).join('|')}
+          >
+            <div class="case-file-header">
+              <div>
+                <span class="card-label">
+                  {item.eyebrow}{item.year ? ` · ${item.year}` : ''}
+                </span>
+                <h2 style="font-size:clamp(26px,4vw,40px);">{item.title}</h2>
+                {item.subtitle && (
+                  <p class="mono-meta" style="margin-top:0.35rem;color:var(--amber);">
+                    {item.subtitle}
+                  </p>
+                )}
+              </div>
+
+              {item.repoUrl && (
+                <a
+                  class="cta cta-outline"
+                  href={item.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Icon name="branch" size={18} />
+                  <span>GitHub</span>
+                  <Icon name="external" size={16} />
+                </a>
+              )}
+            </div>
+
+            <p style="color:var(--cream-dim);max-width:68ch;">{item.summary}</p>
+
+            {item.highlights && (
+              <ul style="margin-top:1.1rem;padding-left:1.25rem;color:var(--cream-dim);display:grid;gap:0.5rem;">
+                {item.highlights.map((h) => (
+                  <li>{h}</li>
+                ))}
+              </ul>
+            )}
+
+            {item.id === 'firedamp' && (
+              <div class="case-steps">
+                {PROFILE.firedampSteps.map((step) => (
+                  <div class="case-step">
+                    <span
+                      class={
+                        step.id === 'detect'
+                          ? 'case-step-tag case-step-tag--coral'
+                          : 'case-step-tag'
+                      }
+                    >
+                      {step.marker}
+                    </span>
+                    <h3 style="font-size:1.05rem;">{step.title}</h3>
+                    <p style="font-size:0.92rem;margin-top:0.45rem;">{step.summary}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div class="pill-row">
+              {item.stack.map((tech) => (
+                <span class="pill pill--amber">{tech}</span>
+              ))}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    <div id="artifacts-empty-state" class="blog-empty-state" hidden>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+        width="56"
+        height="56"
+        fill="none"
+        stroke="#7FB8BC"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <polygon points="32,8 54,20 54,44 32,56 10,44 10,20" />
+        <polyline points="10,20 32,32 54,20" />
+        <line x1="32" y1="32" x2="32" y2="56" />
+        <circle cx="44" cy="44" r="10" fill="#0A2A2D" stroke="#FFB547" />
+        <line x1="38" y1="50" x2="50" y2="38" stroke="#E76F51" />
+      </svg>
+      <p id="artifacts-empty-msg" class="blog-empty-msg">No artifacts matching your query.</p>
+      <button type="button" id="artifacts-empty-clear-btn" class="pill-btn">
+        Clear search
+      </button>
+    </div>
+  </section>
+
+  <script>
+    function initArtifactsPage() {
+      const input = document.getElementById('artifacts-live-search') as HTMLInputElement | null;
+      const clearBtn = document.getElementById('artifacts-search-clear') as HTMLButtonElement | null;
+      const emptyState = document.getElementById('artifacts-empty-state');
+      const emptyMsg = document.getElementById('artifacts-empty-msg');
+      const emptyClearBtn = document.getElementById('artifacts-empty-clear-btn');
+      const cards = Array.from(document.querySelectorAll<HTMLElement>('.artifact-card'));
+
+      if (!input || !clearBtn || !emptyState || !emptyMsg || !emptyClearBtn) return;
+
+      const applyFilters = () => {
+        const raw = input.value;
+        const normalized = raw.toLowerCase().trim();
+        clearBtn.hidden = raw.length === 0;
+        const queryWords = normalized ? normalized.split(/\s+/).filter(Boolean) : [];
+        let matches = 0;
+
+        for (const card of cards) {
+          const text = card.dataset.searchText ?? '';
+          const ok = queryWords.length === 0 || queryWords.every((w) => text.includes(w));
+          card.hidden = !ok;
+          if (ok) matches += 1;
+        }
+
+        if (matches === 0) {
+          emptyMsg.textContent = `No artifacts matching "${raw.trim()}"`;
+          emptyState.hidden = false;
+        } else {
+          emptyState.hidden = true;
+        }
+      };
+
+      if (input.dataset.bound !== 'true') {
+        input.dataset.bound = 'true';
+        input.addEventListener('input', applyFilters);
+        clearBtn.addEventListener('click', () => {
+          input.value = '';
+          applyFilters();
+          input.focus();
+        });
+        emptyClearBtn.addEventListener('click', () => {
+          input.value = '';
+          applyFilters();
+          input.focus();
+        });
+      }
+
+      // Highlight targeted artifact when arriving via /artifacts/#firedamp or #chrona
+      if (window.location.hash) {
+        const target = document.getElementById(window.location.hash.slice(1));
+        if (target && target.classList.contains('artifact-card')) {
+          target.classList.add('is-targeted');
+          requestAnimationFrame(() => {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          });
+          window.setTimeout(() => target.classList.remove('is-targeted'), 1800);
+        }
+      }
+    }
+
+    initArtifactsPage();
+    document.addEventListener('astro:page-load', initArtifactsPage);
+  </script>
+</BaseLayout>

@@ -11,6 +11,7 @@ export interface ProjectEntry {
   readonly subtitle?: string;
   readonly year?: string;
   readonly repoUrl: string;
+  readonly shortSummary: string;
   readonly summary: string;
   readonly stack: readonly string[];
   readonly highlights?: readonly string[];
@@ -132,6 +133,8 @@ export const PROFILE: ProfileData = {
     title: 'Firedamp',
     year: '2026',
     repoUrl: 'https://github.com/pr60t/firedamp',
+    shortSummary:
+      'Open-source CLI that audits multi-tenant RAG platforms for cross-user data leakage using deterministic canary documents.',
     summary:
       'Open-source CLI that audits multi-tenant RAG platforms (Open WebUI adapter) for cross-user data leakage. Plants checksum-verified canary documents as one user, probes as another, and flags any exposure in answers, citations or raw API responses. Deterministic matching, no LLM judge, no GPU.',
     stack: ['Python', 'Docker', 'REST APIs', 'GitHub Actions', 'pytest'],
@@ -184,6 +187,8 @@ export const PROFILE: ProfileData = {
     title: 'Chrona',
     subtitle: 'A Clock Without Timezone Boundaries.',
     repoUrl: 'https://github.com/pr60t/chrona',
+    shortSummary:
+      'Android clock app for setting cross-timezone alarms that ring at the exact right local time with automatic DST.',
     summary:
       'An Android clock application built around one key idea: setting an alarm for a specific time in another timezone and having it ring at exactly the right local time, wherever you are. Combines cross-timezone alarms with automatic daylight-saving adjustments, world clocks, timers, a stopwatch, and bedtime scheduling.',
     stack: [
@@ -276,3 +281,5 @@ export const PROFILE: ProfileData = {
     },
   ],
 };
+
+export const ARTIFACTS: readonly ProjectEntry[] = [PROFILE.firedamp, PROFILE.chrona];

@@ -41,6 +41,7 @@ const resolvedOgImage = ogImage
 
 const currentPath = Astro.url.pathname;
 const isHome = currentPath === '/';
+const isArtifacts = currentPath.startsWith('/artifacts');
 const isBlog = currentPath.startsWith('/blog');
 ---
 
@@ -110,6 +111,9 @@ const isBlog = currentPath.startsWith('/blog');
             <a href="/#projects" data-nav-target="work">Work</a>
           </li>
           <li>
+            <a href="/artifacts/" data-nav-target="artifacts" aria-current={isArtifacts ? 'page' : undefined}>Artifacts</a>
+          </li>
+          <li>
             <a href="/blog/" data-nav-target="blog" aria-current={isBlog ? 'page' : undefined}>Blog</a>
           </li>
           <li>
@@ -142,6 +146,12 @@ const isBlog = currentPath.startsWith('/blog');
             <a href="/#projects" data-mobile-nav data-nav-target="work">
               <Icon name="branch" size={20} />
               <span>Work</span>
+            </a>
+          </li>
+          <li>
+            <a href="/artifacts/" data-mobile-nav data-nav-target="artifacts" aria-current={isArtifacts ? 'page' : undefined}>
+              <Icon name="toc" size={20} />
+              <span>Artifacts</span>
             </a>
           </li>
           <li>

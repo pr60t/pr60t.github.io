@@ -84,35 +84,41 @@ const latestPosts = getAllPosts().slice(0, 3);
       <h2 id="firedamp-heading">{PROFILE.firedamp.title}</h2>
     </div>
 
-    <div class="case-file-panel" id="firedamp-sequence" data-scene-hover="firedamp">
+    <div class="case-file-panel artifact-clickable" id="firedamp-sequence" data-scene-hover="firedamp" data-artifact-href="/artifacts/#firedamp">
       <div class="case-file-header">
         <div>
-          <p>{PROFILE.firedamp.summary}</p>
+          <p class="mobile-only-summary">{PROFILE.firedamp.shortSummary}</p>
+          <p class="desktop-only-detail">{PROFILE.firedamp.summary}</p>
           <div class="pill-row">
             {PROFILE.firedamp.stack.map((tech) => (
               <span class="pill pill--amber">{tech}</span>
             ))}
           </div>
+          <a class="artifact-inspect-link" href="/artifacts/#firedamp">
+            <span>Inspect artifact &rarr;</span>
+          </a>
         </div>
         <a
-          class="cta cta-outline"
+          class="cta cta-outline desktop-only-detail"
           href={PROFILE.firedamp.repoUrl}
           target="_blank"
           rel="noopener noreferrer"
         >
-          View on GitHub
+          <Icon name="branch" size={18} />
+          <span>View on GitHub</span>
+          <Icon name="external" size={16} />
         </a>
       </div>
 
       {PROFILE.firedamp.highlights && (
-        <ul style="padding-left:1.25rem;color:var(--cream-dim);display:grid;gap:0.45rem;">
+        <ul class="desktop-only-detail" style="padding-left:1.25rem;color:var(--cream-dim);display:grid;gap:0.45rem;">
           {PROFILE.firedamp.highlights.map((item) => (
             <li>{item}</li>
           ))}
         </ul>
       )}
 
-      <div class="case-steps">
+      <div class="case-steps desktop-only-detail">
         {PROFILE.firedampSteps.map((step) => (
           <div class="case-step">
             <span
@@ -131,7 +137,7 @@ const latestPosts = getAllPosts().slice(0, 3);
       </div>
     </div>
 
-    <article class="card" style="margin-top:1.25rem;" data-scene-hover="chrona">
+    <article class="card artifact-clickable" style="margin-top:1.25rem;" data-scene-hover="chrona" data-artifact-href="/artifacts/#chrona">
       <div class="case-file-header" style="margin-bottom:1.1rem;padding-bottom:1rem;">
         <div>
           <span class="card-label card-label--mist">{PROFILE.chrona.eyebrow}</span>
@@ -143,7 +149,7 @@ const latestPosts = getAllPosts().slice(0, 3);
           )}
         </div>
         <a
-          class="cta cta-outline"
+          class="cta cta-outline desktop-only-detail"
           href={PROFILE.chrona.repoUrl}
           target="_blank"
           rel="noopener noreferrer"
@@ -154,10 +160,11 @@ const latestPosts = getAllPosts().slice(0, 3);
         </a>
       </div>
 
-      <p>{PROFILE.chrona.summary}</p>
+      <p class="mobile-only-summary">{PROFILE.chrona.shortSummary}</p>
+      <p class="desktop-only-detail">{PROFILE.chrona.summary}</p>
 
       {PROFILE.chrona.highlights && (
-        <ul style="margin-top:1rem;padding-left:1.25rem;color:var(--cream-dim);display:grid;gap:0.45rem;">
+        <ul class="desktop-only-detail" style="margin-top:1rem;padding-left:1.25rem;color:var(--cream-dim);display:grid;gap:0.45rem;">
           {PROFILE.chrona.highlights.map((item) => (
             <li>{item}</li>
           ))}
@@ -169,6 +176,10 @@ const latestPosts = getAllPosts().slice(0, 3);
           <span class="pill">{tech}</span>
         ))}
       </div>
+
+      <a class="artifact-inspect-link" href="/artifacts/#chrona">
+        <span>Inspect artifact &rarr;</span>
+      </a>
     </article>
   </section>
 
@@ -411,5 +422,20 @@ const latestPosts = getAllPosts().slice(0, 3);
 
     initHomeAnimations();
     document.addEventListener('astro:page-load', initHomeAnimations);
+
+    function initArtifactCardClicks() {
+      document.querySelectorAll<HTMLElement>('[data-artifact-href]').forEach((card) => {
+        if (card.dataset.clickBound === 'true') return;
+        card.dataset.clickBound = 'true';
+        card.addEventListener('click', (e) => {
+          const target = e.target as HTMLElement;
+          if (target.closest('a, button')) return;
+          const href = card.dataset.artifactHref;
+          if (href) window.location.assign(href);
+        });
+      });
+    }
+    initArtifactCardClicks();
+    document.addEventListener('astro:page-load', initArtifactCardClicks);
   </script>
 </BaseLayout>
